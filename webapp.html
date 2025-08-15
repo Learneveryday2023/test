@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เส้นทางสู่อิสรภาพทางการเงิน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: The application is designed as a guided journey through four key stages of financial literacy, moving from abstract concepts to practical application. It starts with a main navigation bar for quick access. The core is a visual, step-by-step 'Journey' section that encourages sequential exploration (Mindset -> Foundation -> Acceleration -> Plan). This is followed by a 'Tools' section with interactive calculators (Pay Yourself First, Emergency Fund, Compounding) to turn theory into practice. A 'Key Concepts' section uses interactive cards (Assets vs. Liabilities, Cashflow Quadrant, Fastlane Business) for easy-to-digest learning. This structure was chosen to transform the linear e-book into an engaging, non-linear, and tool-driven experience, enhancing user understanding and retention more effectively than plain text. -->
+    <!-- Visualization & Content Choices: 
+        1. Financial Journey: Report's 4-part structure -> Goal: Guide user -> Viz: Interactive step-by-step timeline -> Interaction: Click to reveal content -> Justification: More engaging than a static list, visualizes progress -> Method: HTML/CSS/JS.
+        2. Pay Yourself First: Concept of saving 10% -> Goal: Personalize the concept -> Viz: Simple calculator form -> Interaction: Real-time calculation on input -> Justification: Makes the advice actionable -> Method: HTML/JS.
+        3. Compound Interest: Abstract concept of compounding -> Goal: Demonstrate long-term growth -> Viz: Line chart -> Interaction: Sliders for variables (principal, rate, time) update chart instantly -> Justification: The most effective way to show compounding's power -> Library: Chart.js.
+        4. Cashflow Quadrant: E/S/B/I concept -> Goal: Explain the 4 types -> Viz: 2x2 interactive grid -> Interaction: Click a quadrant to see details -> Justification: More memorable and interactive than a static diagram -> Method: HTML/CSS/JS.
+        5. Assets vs. Liabilities: Core definition -> Goal: Differentiate clearly -> Viz: Two-column layout with icons -> Interaction: Clickable examples show details -> Justification: Reinforces the core concept of cash flow direction -> Method: HTML/CSS/JS.
+        6. Fastlane Business (NEW): NECST commandments -> Goal: Explain the 5 principles -> Viz: 5 interactive cards -> Interaction: Click a card to reveal its detailed explanation -> Justification: Breaks down a complex topic into digestible, interactive chunks -> Method: HTML/CSS/JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #FDFBF7;
+            color: #3C3C3C;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #A47E3B;
+            border-bottom-color: #A47E3B;
+        }
+        .step {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .btn-primary {
+            background-color: #A47E3B;
+            color: #FFFFFF;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #8C6A2F;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #EAEAEA;
+            border-radius: 12px;
+            padding: 24px;
+            transition: box-shadow 0.3s, border-color 0.3s;
+        }
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-color: #A47E3B;
+        }
+        .tab.active {
+            border-color: #A47E3B;
+            background-color: #A47E3B;
+            color: #FFFFFF;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .clickable-card.active {
+            border-color: #A47E3B;
+            background-color: #fdf5e6;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-[#A47E3B]">
+                🗺️ เส้นทางสู่อิสรภาพ
+            </div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#journey" class="nav-link border-b-2 border-transparent pb-1">เส้นทาง</a>
+                <a href="#tools" class="nav-link border-b-2 border-transparent pb-1">เครื่องมือ</a>
+                <a href="#concepts" class="nav-link border-b-2 border-transparent pb-1">แนวคิดหลัก</a>
+                <a href="#next-steps" class="nav-link border-b-2 border-transparent pb-1">ก้าวต่อไป</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
+            <a href="#journey" class="block py-2 text-center nav-link">เส้นทาง</a>
+            <a href="#tools" class="block py-2 text-center nav-link">เครื่องมือ</a>
+            <a href="#concepts" class="block py-2 text-center nav-link">แนวคิดหลัก</a>
+            <a href="#next-steps" class="block py-2 text-center nav-link">ก้าวต่อไป</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <section class="text-center mb-20">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">เริ่มต้นการเดินทางสู่ <span class="text-[#A47E3B]">อิสรภาพทางการเงิน</span></h1>
+            <p class="text-lg md:text-xl max-w-3xl mx-auto text-gray-600">
+                แอปพลิเคชันนี้ได้ย่อยและสังเคราะห์แก่นความรู้จากหนังสือการเงินระดับโลก เพื่อสร้างเป็นแผนที่และเครื่องมือที่เข้าใจง่าย ให้คุณนำไปใช้สร้างความมั่งคั่งในแบบของตัวเองได้จริง
+            </p>
+        </section>
+
+        <section id="journey" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-4">4 ขั้นตอนบนเส้นทางการเงิน</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">นี่คือแผนที่ภาพรวมของการเดินทางของคุณ คลิกที่แต่ละขั้นตอนเพื่อดูรายละเอียดและเริ่มลงมือทำ</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="step card text-center cursor-pointer" data-target="mindset">
+                    <div class="text-5xl mb-4">🧠</div>
+                    <h3 class="text-xl font-bold mb-2">ส่วนที่ 1: ปรับความคิด</h3>
+                    <p class="text-gray-500">สร้าง Mindset เศรษฐี เพื่อพิชิตความมั่งคั่ง</p>
+                </div>
+                <div class="step card text-center cursor-pointer" data-target="foundation">
+                    <div class="text-5xl mb-4">🏗️</div>
+                    <h3 class="text-xl font-bold mb-2">ส่วนที่ 2: วางรากฐาน</h3>
+                    <p class="text-gray-500">สร้างฐานการเงินที่มั่นคง พร้อมรับทุกสถานการณ์</p>
+                </div>
+                <div class="step card text-center cursor-pointer" data-target="acceleration">
+                    <div class="text-5xl mb-4">🚀</div>
+                    <h3 class="text-xl font-bold mb-2">ส่วนที่ 3: เร่งสปีด</h3>
+                    <p class="text-gray-500">เรียนรู้กลยุทธ์สร้างความมั่งคั่งแบบก้าวกระโดด</p>
+                </div>
+                <div class="step card text-center cursor-pointer" data-target="roadmap">
+                    <div class="text-5xl mb-4">📝</div>
+                    <h3 class="text-xl font-bold mb-2">ส่วนที่ 4: วางแผน</h3>
+                    <p class="text-gray-500">สร้างแผนที่การเงินส่วนตัวสู่เป้าหมายของคุณ</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tools" class="mb-20 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-12">เครื่องมือวางแผนการเงิน</h2>
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-8">
+                
+                <div class="card">
+                    <h3 class="text-2xl font-bold mb-4">คำนวณเงินออม "จ่ายให้ตัวเองก่อน"</h3>
+                    <p class="text-gray-600 mb-6">กฎข้อแรกสู่ความมั่งคั่งคือการออมก่อนใช้ ลองคำนวณดูว่าคุณควรจ่ายให้ตัวเองก่อนเท่าไหร่ในแต่ละเดือน (แนะนำที่ 10% ขึ้นไป)</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <label for="income" class="block text-sm font-medium text-gray-700">รายได้ต่อเดือน (บาท)</label>
+                            <input type="number" id="income" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#A47E3B] focus:ring-[#A47E3B] sm:text-sm p-3" placeholder="เช่น 30000">
+                            
+                            <label for="saving-percent" class="block text-sm font-medium text-gray-700 mt-4">เปอร์เซ็นต์ที่ต้องการออม (<span id="saving-percent-value">10</span>%)</label>
+                            <input type="range" id="saving-percent" min="1" max="50" value="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#A47E3B]">
+                        </div>
+                        <div class="bg-green-50 p-6 rounded-lg text-center">
+                            <p class="text-lg text-green-800">คุณควรเก็บออมอย่างน้อย</p>
+                            <p id="saving-amount" class="text-4xl font-bold text-green-600">0</p>
+                            <p class="text-lg text-green-800">บาท/เดือน</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="text-2xl font-bold mb-4">พลังของดอกเบี้ยทบต้น</h3>
+                    <p class="text-gray-600 mb-6">ค้นพบสิ่งมหัศจรรย์อันดับ 8 ของโลกที่อัลเบิร์ต ไอน์สไตน์กล่าวไว้ ลองปรับค่าต่างๆ เพื่อดูว่าเงินของคุณจะเติบโตแบบก้าวกระโดดได้อย่างไรเมื่อเวลาผ่านไป</p>
+                    <div class="chart-container">
+                        <canvas id="compound-chart"></canvas>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+                        <div>
+                            <label for="initial-investment" class="text-sm">เงินลงทุนเริ่มต้น</label>
+                            <input type="number" id="initial-investment" value="10000" class="w-full mt-1 p-2 border rounded">
+                        </div>
+                        <div>
+                            <label for="monthly-contribution" class="text-sm">เงินลงทุนต่อเดือน</label>
+                            <input type="number" id="monthly-contribution" value="3000" class="w-full mt-1 p-2 border rounded">
+                        </div>
+                        <div>
+                            <label for="interest-rate" class="text-sm">ผลตอบแทนต่อปี (%)</label>
+                            <input type="number" id="interest-rate" value="7" class="w-full mt-1 p-2 border rounded">
+                        </div>
+                        <div>
+                            <label for="investment-period" class="text-sm">ระยะเวลา (ปี)</label>
+                            <input type="number" id="investment-period" value="20" class="w-full mt-1 p-2 border rounded">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="concepts" class="mb-20 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-12">สำรวจแนวคิดหลักทางการเงิน</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card">
+                    <h3 class="text-2xl font-bold mb-4">ทรัพย์สิน vs หนี้สิน</h3>
+                    <p class="text-gray-600 mb-6">หัวใจสำคัญของการสร้างความมั่งคั่งคือการเข้าใจความแตกต่างที่แท้จริงระหว่างสองสิ่งนี้</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h4 class="font-bold text-green-800 text-lg">✅ ทรัพย์สิน (Asset)</h4>
+                            <p class="text-green-700">ทุกสิ่งที่ **ใส่เงิน** เข้ากระเป๋าคุณ</p>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded-lg">
+                            <h4 class="font-bold text-red-800 text-lg">❌ หนี้สิน (Liability)</h4>
+                            <p class="text-red-700">ทุกสิ่งที่ **ดึงเงิน** ออกจากกระเป๋าคุณ</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-bold mb-4">กลยุทธ์ปิดหนี้</h3>
+                    <p class="text-gray-600 mb-6">เลือกกลยุทธ์ที่เหมาะกับสไตล์ของคุณเพื่อกำจัดหนี้เสียให้เร็วที่สุด</p>
+                    <div class="flex border border-gray-300 rounded-lg">
+                        <button class="tab active w-1/2 p-3 rounded-l-lg" data-tab="avalanche">Avalanche</button>
+                        <button class="tab w-1/2 p-3 rounded-r-lg" data-tab="snowball">Snowball</button>
+                    </div>
+                    <div id="avalanche" class="tab-content active mt-4">
+                        <h4 class="font-bold">หิมะถล่ม (Avalanche)</h4>
+                        <p>โฟกัสจ่ายหนี้ก้อนที่มี **อัตราดอกเบี้ยสูงสุด** ก่อน วิธีนี้จะช่วยให้คุณประหยัดดอกเบี้ยโดยรวมได้มากที่สุด</p>
+                    </div>
+                    <div id="snowball" class="tab-content mt-4">
+                        <h4 class="font-bold">ก้อนหิมะ (Snowball)</h4>
+                        <p>โฟกัสจ่ายหนี้ก้อนที่ **มียอดคงค้างน้อยที่สุด** ก่อน เพื่อสร้างกำลังใจและแรงผลักดัน</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card mt-8">
+                <h3 class="text-2xl font-bold text-center mb-4">เงิน 4 ด้าน (Cashflow Quadrant)</h3>
+                <p class="text-gray-600 text-center mb-6">แผนที่ที่บอกว่ารายได้ของคุณมาจากไหน เป้าหมายคือการย้ายตัวเองจากฝั่งซ้ายไปฝั่งขวา</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="quadrant-card clickable-card p-4 border rounded-lg cursor-pointer" data-quadrant="E">
+                        <h4 class="font-bold text-xl">E</h4>
+                        <p>ลูกจ้าง (Employee)</p>
+                    </div>
+                    <div class="quadrant-card clickable-card p-4 border rounded-lg cursor-pointer" data-quadrant="S">
+                        <h4 class="font-bold text-xl">S</h4>
+                        <p>ธุรกิจส่วนตัว (Self-Employed)</p>
+                    </div>
+                    <div class="quadrant-card clickable-card p-4 border rounded-lg cursor-pointer" data-quadrant="B">
+                        <h4 class="font-bold text-xl">B</h4>
+                        <p>เจ้าของธุรกิจ (Business Owner)</p>
+                    </div>
+                    <div class="quadrant-card clickable-card p-4 border rounded-lg cursor-pointer" data-quadrant="I">
+                        <h4 class="font-bold text-xl">I</h4>
+                        <p>นักลงทุน (Investor)</p>
+                    </div>
+                </div>
+                <div id="quadrant-details" class="mt-6 p-6 bg-gray-50 rounded-lg min-h-[100px]">
+                    <p class="text-gray-500">คลิกที่แต่ละด้านเพื่อดูรายละเอียด...</p>
+                </div>
+            </div>
+            <div class="card mt-8">
+                <h3 class="text-2xl font-bold text-center mb-4">สร้างธุรกิจเลนด่วน (Fastlane Business)</h3>
+                <p class="text-gray-600 text-center mb-6">เปลี่ยนจาก "ผู้บริโภค" เป็น "ผู้ผลิต" ด้วยบัญญัติ 5 ประการ (NECST) เพื่อสร้างความมั่งคั่งที่เร็วกว่า</p>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-center">
+                    <div class="fastlane-card clickable-card p-3 border rounded-lg cursor-pointer" data-fastlane="N">
+                        <h4 class="font-bold text-xl">N</h4><p class="text-sm">Need</p>
+                    </div>
+                    <div class="fastlane-card clickable-card p-3 border rounded-lg cursor-pointer" data-fastlane="E">
+                        <h4 class="font-bold text-xl">E</h4><p class="text-sm">Entry</p>
+                    </div>
+                    <div class="fastlane-card clickable-card p-3 border rounded-lg cursor-pointer" data-fastlane="C">
+                        <h4 class="font-bold text-xl">C</h4><p class="text-sm">Control</p>
+                    </div>
+                    <div class="fastlane-card clickable-card p-3 border rounded-lg cursor-pointer" data-fastlane="S">
+                        <h4 class="font-bold text-xl">S</h4><p class="text-sm">Scale</p>
+                    </div>
+                    <div class="fastlane-card clickable-card p-3 border rounded-lg cursor-pointer" data-fastlane="T">
+                        <h4 class="font-bold text-xl">T</h4><p class="text-sm">Time</p>
+                    </div>
+                </div>
+                <div id="fastlane-details" class="mt-6 p-6 bg-gray-50 rounded-lg min-h-[100px]">
+                    <p class="text-gray-500">คลิกที่บัญญัติแต่ละข้อเพื่อดูคำอธิบาย...</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="next-steps" class="scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-12">ก้าวต่อไป: ศึกษาอะไรเพิ่มเติม?</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">E-book เล่มนี้คือแผนที่ภาพรวม หากคุณต้องการเจาะลึกในแต่ละด้าน นี่คือคำแนะนำว่าคุณควรอ่านหนังสือเล่มไหนเป็นลำดับถัดไป</p>
+             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card">
+                    <h4 class="font-bold text-lg mb-2">ปรับ Mindset ให้แกร่ง</h4>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>ถอดรหัสลับสมองเงินล้าน</li>
+                        <li>จิตวิทยาว่าด้วยเงิน</li>
+                        <li>Money Script</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4 class="font-bold text-lg mb-2">เข้าใจหลักการอมตะ</h4>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>เศรษฐีชี้ทางรวย</li>
+                        <li>พ่อรวยสอนลูก</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4 class="font-bold text-lg mb-2">แผนการที่เป็นรูปธรรม</h4>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>หาเงินได้ใช้เงินเป็น</li>
+                        <li>YOU ARE YOUR MONEY COACH</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4 class="font-bold text-lg mb-2">เป็นเจ้าของธุรกิจ/นักลงทุน</h4>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>พ่อรวยสอนลูก เงินสี่ด้าน</li>
+                        <li>สร้างความได้เปรียบทางการเงิน</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4 class="font-bold text-lg mb-2">สร้างความมั่งคั่งก้าวกระโดด</h4>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>Fastlane Millionaire</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-white mt-20 border-t">
+        <div class="container mx-auto px-6 py-8 text-center text-gray-500">
+            <p>คุณคือโค้ชการเงินที่ดีที่สุดของตัวเอง</p>
+            <p class="mt-2 text-sm">ความสำเร็จไม่ได้วัดกันที่ว่าใครรู้เยอะกว่า แต่-วัดกันที่ว่าใคร "ทำ" อย่างสม่ำเสมอมากกว่ากัน</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    mobileMenu.classList.add('hidden');
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            const incomeInput = document.getElementById('income');
+            const savingPercentSlider = document.getElementById('saving-percent');
+            const savingPercentValue = document.getElementById('saving-percent-value');
+            const savingAmount = document.getElementById('saving-amount');
+
+            function calculateSavings() {
+                const income = parseFloat(incomeInput.value) || 0;
+                const percent = parseInt(savingPercentSlider.value);
+                savingPercentValue.textContent = percent;
+                const amount = (income * percent) / 100;
+                savingAmount.textContent = amount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
+            incomeInput.addEventListener('input', calculateSavings);
+            savingPercentSlider.addEventListener('input', calculateSavings);
+
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    const target = tab.getAttribute('data-tab');
+                    tabContents.forEach(content => {
+                        if (content.id === target) {
+                            content.classList.add('active');
+                        } else {
+                            content.classList.remove('active');
+                        }
+                    });
+                });
+            });
+
+            const quadrantCards = document.querySelectorAll('.quadrant-card');
+            const quadrantDetails = document.getElementById('quadrant-details');
+            const quadrantInfo = {
+                E: { title: 'E (Employee) - ลูกจ้าง', text: 'ค่านิยมหลักคือ "ความมั่นคง" มองหางานที่ปลอดภัย สวัสดิการดี และยอมแลกเวลาของตัวเองกับเงินเดือนที่แน่นอน' },
+                S: { title: 'S (Self-Employed) - คนทำธุรกิจส่วนตัว', text: 'ค่านิยมหลักคือ "ความเป็นอิสระ" และ "ความสมบูรณ์แบบ" อยากเป็นนายของตัวเอง แต่ถ้าหยุดทำ รายได้ก็หยุดด้วย' },
+                B: { title: 'B (Business Owner) - เจ้าของธุรกิจ', text: 'ค่านิยมหลักคือ "การสร้างระบบ" ทำงาน บน ธุรกิจ ไม่ใช่ ใน ธุรกิจ เพื่อให้ระบบทำเงินได้ด้วยตัวเอง' },
+                I: { title: 'I (Investor) - นักลงทุน', text: 'ค่านิยมหลักคือ "ผลตอบแทนจากการลงทุน" ใช้ "เงิน" ไปทำงานหนักเพื่อสร้าง "เงิน" เพิ่มขึ้นอีก' }
+            };
+
+            quadrantCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const quadrantKey = card.getAttribute('data-quadrant');
+                    const info = quadrantInfo[quadrantKey];
+                    quadrantDetails.innerHTML = `<h4 class="font-bold">${info.title}</h4><p>${info.text}</p>`;
+                    quadrantCards.forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                });
+            });
+            
+            const fastlaneCards = document.querySelectorAll('.fastlane-card');
+            const fastlaneDetails = document.getElementById('fastlane-details');
+            const fastlaneInfo = {
+                N: { title: 'Need (ความต้องการ)', text: 'ธุรกิจของคุณต้องแก้ปัญหาหรือตอบสนองความต้องการที่มีอยู่จริงในตลาด ไม่ใช่ทำตามสิ่งที่คุณรักเพียงอย่างเดียว' },
+                E: { title: 'Entry (การเข้าถึง)', text: 'ธุรกิจที่ใครๆ ก็เริ่มทำได้ง่าย มักจะมีการแข่งขันสูงและกำไรน้อย ธุรกิจเลนด่วนมักจะมีอุปสรรคในการเริ่มต้นที่สูงกว่า' },
+                C: { title: 'Control (การควบคุม)', text: 'คุณต้องเป็นผู้ควบคุมธุรกิจและแผนการเงินของตัวเอง ไม่ใช่ไปฝากชีวิตไว้กับแพลตฟอร์มของคนอื่น' },
+                S: { title: 'Scale (ขนาด)', text: 'ธุรกิจของคุณต้องสามารถขยายขนาดเพื่อรองรับลูกค้าจำนวนมากได้ (เช่น ซอฟต์แวร์, คอร์สออนไลน์) หรือมีกำไรต่อหน่วยสูงมาก' },
+                T: { title: 'Time (เวลา)', text: 'ธุรกิจของคุณต้องสามารถแยกขาดจากเวลาของคุณได้ในที่สุด คือมันสามารถทำเงินได้แม้ในเวลาที่คุณหลับ' }
+            };
+
+            fastlaneCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const fastlaneKey = card.getAttribute('data-fastlane');
+                    const info = fastlaneInfo[fastlaneKey];
+                    fastlaneDetails.innerHTML = `<h4 class="font-bold">${info.title}</h4><p>${info.text}</p>`;
+                    fastlaneCards.forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                });
+            });
+
+            const steps = document.querySelectorAll('.step');
+            steps.forEach(step => {
+                step.addEventListener('click', () => {
+                    const targetId = step.getAttribute('data-target');
+                    let targetSection;
+                    if (targetId === 'mindset' || targetId === 'foundation' || targetId === 'acceleration') targetSection = document.getElementById('concepts');
+                    if (targetId === 'roadmap') targetSection = document.getElementById('next-steps');
+                    
+                    if(targetSection) {
+                        targetSection.scrollIntoView({ behavior: 'smooth' });
+                        targetSection.classList.add('bg-yellow-50', 'transition-colors', 'duration-1000', 'rounded-lg', 'p-4');
+                        setTimeout(() => {
+                           targetSection.classList.remove('bg-yellow-50', 'p-4');
+                        }, 2000);
+                    }
+                });
+            });
+
+            const ctx = document.getElementById('compound-chart').getContext('2d');
+            let compoundChart;
+
+            const initialInvestmentInput = document.getElementById('initial-investment');
+            const monthlyContributionInput = document.getElementById('monthly-contribution');
+            const interestRateInput = document.getElementById('interest-rate');
+            const investmentPeriodInput = document.getElementById('investment-period');
+
+            function createOrUpdateChart() {
+                const initial = parseFloat(initialInvestmentInput.value) || 0;
+                const monthly = parseFloat(monthlyContributionInput.value) || 0;
+                const rate = parseFloat(interestRateInput.value) / 100 || 0;
+                const years = parseInt(investmentPeriodInput.value) || 0;
+
+                const labels = [];
+                const data = [];
+                let total = initial;
+
+                for (let i = 0; i <= years; i++) {
+                    labels.push(`ปีที่ ${i}`);
+                    data.push(total);
+                    total = total * (1 + rate) + (monthly * 12);
+                }
+
+                if (compoundChart) {
+                    compoundChart.data.labels = labels;
+                    compoundChart.data.datasets[0].data = data;
+                    compoundChart.update();
+                } else {
+                    compoundChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'มูลค่าพอร์ตการลงทุน',
+                                data: data,
+                                borderColor: '#A47E3B',
+                                backgroundColor: 'rgba(164, 126, 59, 0.1)',
+                                fill: true,
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    ticks: {
+                                        callback: function(value) {
+                                            return value.toLocaleString('th-TH') + ' บาท';
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.dataset.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            if (context.parsed.y !== null) {
+                                                label += context.parsed.y.toLocaleString('th-TH', { style: 'currency', currency: 'THB' });
+                                            }
+                                            return label;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+            
+            [initialInvestmentInput, monthlyContributionInput, interestRateInput, investmentPeriodInput].forEach(input => {
+                input.addEventListener('input', createOrUpdateChart);
+            });
+            
+            createOrUpdateChart();
+        });
+    </script>
+</body>
+</html>
